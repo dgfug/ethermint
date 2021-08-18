@@ -3,7 +3,6 @@ module github.com/tharsis/ethermint
 go 1.16
 
 require (
-	github.com/DataDog/zstd v1.4.8 // indirect
 	github.com/armon/go-metrics v0.3.9
 	github.com/aws/aws-sdk-go v1.38.21 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
@@ -16,12 +15,9 @@ require (
 	github.com/cosmos/go-bip39 v1.0.0
 	github.com/cosmos/ibc-go v1.0.0
 	github.com/deckarep/golang-set v1.7.1 // indirect
-	github.com/dgraph-io/badger/v2 v2.2007.3 // indirect
-	github.com/dgraph-io/ristretto v0.1.0 // indirect
 	github.com/ethereum/go-ethereum v1.10.3
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.3
-	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
 	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.0.1 // indirect
@@ -46,10 +42,9 @@ require (
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969
 	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/tendermint v0.34.12
-	github.com/tendermint/tm-db v0.6.4
+	github.com/tendermint/tm-db v0.6.5
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/xlab/suplog v1.3.0
-	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2 // indirect
