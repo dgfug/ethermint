@@ -18,7 +18,7 @@ require (
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.3 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
-	github.com/ethereum/go-ethereum v1.10.3
+	github.com/ethereum/go-ethereum v1.10.8
 	github.com/gofrs/uuid v4.0.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.3
 	github.com/golang/glog v0.0.0-20210429001901-424d2337a529 // indirect
@@ -51,7 +51,6 @@ require (
 	github.com/xlab/suplog v1.3.0
 	go.etcd.io/bbolt v1.3.6 // indirect
 	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
 	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2 // indirect
 	google.golang.org/genproto v0.0.0-20210816143620-e15ff196659d
 	google.golang.org/grpc v1.40.0
