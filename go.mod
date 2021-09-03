@@ -12,9 +12,9 @@ require (
 	github.com/bugsnag/bugsnag-go v2.1.0+incompatible // indirect
 	github.com/bugsnag/panicwrap v1.3.4 // indirect
 	github.com/cespare/cp v1.1.1 // indirect
-	github.com/cosmos/cosmos-sdk v0.43.0
+	github.com/cosmos/cosmos-sdk v0.44.0
 	github.com/cosmos/go-bip39 v1.0.0
-	github.com/cosmos/ibc-go v1.0.0
+	github.com/cosmos/ibc-go v1.1.0
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgraph-io/badger/v2 v2.2007.3 // indirect
 	github.com/dgraph-io/ristretto v0.1.0 // indirect
