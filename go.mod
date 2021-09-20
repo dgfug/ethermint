@@ -42,7 +42,7 @@ require (
 	github.com/rs/cors v1.8.0
 	github.com/spf13/cast v1.4.1
 	github.com/spf13/cobra v1.2.1
-	github.com/spf13/viper v1.8.1
+	github.com/spf13/viper v1.9.0
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969
 	github.com/stretchr/testify v1.7.0
 	github.com/tendermint/tendermint v0.34.12
@@ -50,10 +50,8 @@ require (
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/xlab/suplog v1.3.0
 	go.etcd.io/bbolt v1.3.6 // indirect
-	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
 	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
-	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2 // indirect
-	google.golang.org/genproto v0.0.0-20210816143620-e15ff196659d
+	google.golang.org/genproto v0.0.0-20210828152312-66f60bf46e71
 	google.golang.org/grpc v1.40.0
 	gopkg.in/yaml.v2 v2.4.0
 	nhooyr.io/websocket v1.8.7 // indirect
