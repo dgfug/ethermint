@@ -29,6 +29,8 @@ jobs:
   #       if: "env.GIT_DIFF != ''"
 
   split-test-files:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2.3.4
