@@ -4,10 +4,9 @@ go 1.16
 
 require (
 	github.com/DataDog/zstd v1.4.8 // indirect
-	github.com/armon/go-metrics v0.3.9
-	github.com/aws/aws-sdk-go v1.38.21 // indirect
+	github.com/armon/go-metrics v0.3.10
 	github.com/bitly/go-simplejson v0.5.0 // indirect
-	github.com/btcsuite/btcd v0.22.0-beta
+	github.com/btcsuite/btcd v0.22.1
 	github.com/btcsuite/btcutil v1.0.3-0.20201208143702-a53e38424cce
 	github.com/bugsnag/bugsnag-go v2.1.0+incompatible // indirect
 	github.com/bugsnag/panicwrap v1.3.4 // indirect
@@ -25,11 +24,9 @@ require (
 	github.com/golang/protobuf v1.5.2
 	github.com/golang/snappy v0.0.4 // indirect
 	github.com/google/btree v1.0.1 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/mux v1.8.0
-	github.com/gorilla/websocket v1.4.2
+	github.com/gorilla/websocket v1.5.0
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
-	github.com/hashicorp/go-immutable-radix v1.3.0 // indirect
 	github.com/improbable-eng/grpc-web v0.14.0
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/miguelmota/go-ethereum-hdwallet v0.0.1
@@ -39,22 +36,18 @@ require (
 	github.com/rakyll/statik v0.1.7
 	github.com/regen-network/cosmos-proto v0.3.1
 	github.com/rjeczalik/notify v0.9.2 // indirect
-	github.com/rs/cors v1.8.0
+	github.com/rs/cors v1.8.2
 	github.com/spf13/cast v1.4.1
-	github.com/spf13/cobra v1.2.1
-	github.com/spf13/viper v1.8.1
+	github.com/spf13/cobra v1.4.0
+	github.com/spf13/viper v1.11.0
 	github.com/status-im/keycard-go v0.0.0-20200402102358-957c09536969
-	github.com/stretchr/testify v1.7.0
-	github.com/tendermint/tendermint v0.34.12
-	github.com/tendermint/tm-db v0.6.4
+	github.com/stretchr/testify v1.7.1
+	github.com/tendermint/tendermint v0.35.5
+	github.com/tendermint/tm-db v0.6.6
 	github.com/tyler-smith/go-bip39 v1.1.0
 	github.com/xlab/suplog v1.3.0
-	go.etcd.io/bbolt v1.3.6 // indirect
-	golang.org/x/crypto v0.0.0-20210813211128-0a44fdfbc16e // indirect
-	golang.org/x/net v0.0.0-20210805182204-aaa1db679c0d // indirect
-	golang.org/x/sys v0.0.0-20210817190340-bfb29a6856f2 // indirect
-	google.golang.org/genproto v0.0.0-20210816143620-e15ff196659d
-	google.golang.org/grpc v1.40.0
+	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac
+	google.golang.org/grpc v1.46.2
 	gopkg.in/yaml.v2 v2.4.0
 	nhooyr.io/websocket v1.8.7 // indirect
 )
