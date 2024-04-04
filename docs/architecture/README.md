@@ -30,11 +30,9 @@ If recorded decisions turned out to be lacking, convene a discussion, record the
 
 Note the context/background should be written in the present tense.
 
-Please add a entry below in your Pull Request for an ADR.
+Please add an entry below in your Pull Request for an ADR.
 
 ## ADR Table of Contents
 
-<!--
-Add an entry in the following format: 
-- [ADR XXX: ADR Title](./adr-XXX-adr-title.md)
--->
+- [ADR 001: State](adr-001-state.md)
+- [ADR 002: EVM Hooks](adr-002-evm-hooks.md)

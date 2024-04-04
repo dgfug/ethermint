@@ -1,7 +1,22 @@
+// Copyright 2021 Evmos Foundation
+// This file is part of Evmos' Ethermint library.
+//
+// The Ethermint library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Ethermint library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Ethermint library. If not, see https://github.com/evmos/ethermint/blob/main/LICENSE
 package types
 
 import (
-	ethcmn "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 )
 
@@ -39,14 +54,14 @@ func (al AccessList) ToEthAccessList() *ethtypes.AccessList {
 	var ethAccessList ethtypes.AccessList
 
 	for _, tuple := range al {
-		storageKeys := make([]ethcmn.Hash, len(tuple.StorageKeys))
+		storageKeys := make([]common.Hash, len(tuple.StorageKeys))
 
 		for i := range tuple.StorageKeys {
-			storageKeys[i] = ethcmn.HexToHash(tuple.StorageKeys[i])
+			storageKeys[i] = common.HexToHash(tuple.StorageKeys[i])
 		}
 
 		ethAccessList = append(ethAccessList, ethtypes.AccessTuple{
-			Address:     ethcmn.HexToAddress(tuple.Address),
+			Address:     common.HexToAddress(tuple.Address),
 			StorageKeys: storageKeys,
 		})
 	}

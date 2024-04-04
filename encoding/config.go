@@ -1,30 +1,40 @@
+// Copyright 2021 Evmos Foundation
+// This file is part of Evmos' Ethermint library.
+//
+// The Ethermint library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Ethermint library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Ethermint library. If not, see https://github.com/evmos/ethermint/blob/main/LICENSE
 package encoding
 
 import (
-	"github.com/cosmos/cosmos-sdk/client"
 	amino "github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/simapp/params"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 
-	ethtypes "github.com/ethereum/go-ethereum/core/types"
-
-	enccodec "github.com/tharsis/ethermint/encoding/codec"
-	evmtypes "github.com/tharsis/ethermint/x/evm/types"
+	enccodec "github.com/evmos/ethermint/encoding/codec"
 )
 
 // MakeConfig creates an EncodingConfig for testing
 func MakeConfig(mb module.BasicManager) params.EncodingConfig {
 	cdc := amino.NewLegacyAmino()
 	interfaceRegistry := types.NewInterfaceRegistry()
-	marshaler := amino.NewProtoCodec(interfaceRegistry)
+	codec := amino.NewProtoCodec(interfaceRegistry)
 
 	encodingConfig := params.EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,
-		Marshaler:         marshaler,
-		TxConfig:          NewTxConfig(marshaler),
+		Codec:             codec,
+		TxConfig:          tx.NewTxConfig(codec, tx.DefaultSignModes),
 		Amino:             cdc,
 	}
 
@@ -33,45 +43,4 @@ func MakeConfig(mb module.BasicManager) params.EncodingConfig {
 	enccodec.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	mb.RegisterInterfaces(encodingConfig.InterfaceRegistry)
 	return encodingConfig
-}
-
-type txConfig struct {
-	cdc amino.ProtoCodecMarshaler
-	client.TxConfig
-}
-
-// NewTxConfig returns a new protobuf TxConfig using the provided ProtoCodec and sign modes. The
-// first enabled sign mode will become the default sign mode.
-func NewTxConfig(marshaler amino.ProtoCodecMarshaler) client.TxConfig {
-	return &txConfig{
-		marshaler,
-		tx.NewTxConfig(marshaler, tx.DefaultSignModes),
-	}
-}
-
-// TxEncoder overwrites sdk.TxEncoder to support MsgEthereumTx
-func (g txConfig) TxEncoder() sdk.TxEncoder {
-	return func(tx sdk.Tx) ([]byte, error) {
-		msg, ok := tx.(*evmtypes.MsgEthereumTx)
-		if ok {
-			return msg.AsTransaction().MarshalBinary()
-		}
-		return g.TxConfig.TxEncoder()(tx)
-	}
-}
-
-// TxDecoder overwrites sdk.TxDecoder to support MsgEthereumTx
-func (g txConfig) TxDecoder() sdk.TxDecoder {
-	return func(txBytes []byte) (sdk.Tx, error) {
-		tx := &ethtypes.Transaction{}
-
-		err := tx.UnmarshalBinary(txBytes)
-		if err == nil {
-			msg := &evmtypes.MsgEthereumTx{}
-			msg.FromEthereumTx(tx)
-			return msg, nil
-		}
-
-		return g.TxConfig.TxDecoder()(txBytes)
-	}
 }

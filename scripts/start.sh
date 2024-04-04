@@ -11,7 +11,7 @@ TEST_QTD=1
 
 #PORT AND RPC_PORT 3 initial digits, to be concat with a suffix later when node is initialized
 RPC_PORT="854"
-IP_ADDR="0.0.0.0"
+IP_ADDR="127.0.0.1"
 MODE="rpc"
 
 KEY="mykey"
@@ -124,9 +124,10 @@ if [[ -z $TEST || $TEST == "rpc" ]]; then
     for i in $(seq 1 "$TEST_QTD"); do
         HOST_RPC=http://$IP_ADDR:$RPC_PORT"$i"
         echo "going to test ethermint node $HOST_RPC ..."
-        MODE=$MODE HOST=$HOST_RPC go test ./tests/... -timeout=300s -v -short
-        
-        RPC_FAIL=$?
+        MODE=$MODE HOST=$HOST_RPC go test ./tests/e2e/... -timeout=300s -v -short
+        MODE=$MODE HOST=$HOST_RPC go test ./tests/rpc/... -timeout=300s -v -short
+
+        TEST_FAIL=$?
     done
     
 fi
@@ -149,8 +150,8 @@ for i in "${arr[@]}"; do
     stop_func "$i"
 done
 
-if [[ (-z $TEST || $TEST == "rpc") && $RPC_FAIL -ne 0 ]]; then
-    exit $RPC_FAIL
+if [[ (-z $TEST || $TEST == "rpc") && $TEST_FAIL -ne 0 ]]; then
+    exit $TEST_FAIL
 else
     exit 0
 fi

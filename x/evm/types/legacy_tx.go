@@ -1,16 +1,30 @@
+// Copyright 2021 Evmos Foundation
+// This file is part of Evmos' Ethermint library.
+//
+// The Ethermint library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Ethermint library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Ethermint library. If not, see https://github.com/evmos/ethermint/blob/main/LICENSE
 package types
 
 import (
 	"math/big"
 
-	sdk "github.com/cosmos/cosmos-sdk/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
+	errorsmod "cosmossdk.io/errors"
 	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
-	"github.com/tharsis/ethermint/types"
+	"github.com/evmos/ethermint/types"
 )
 
-func newLegacyTx(tx *ethtypes.Transaction) *LegacyTx {
+func newLegacyTx(tx *ethtypes.Transaction) (*LegacyTx, error) {
 	txData := &LegacyTx{
 		Nonce:    tx.Nonce(),
 		Data:     tx.Data(),
@@ -18,22 +32,28 @@ func newLegacyTx(tx *ethtypes.Transaction) *LegacyTx {
 	}
 
 	v, r, s := tx.RawSignatureValues()
-	if tx.To() != nil {
-		txData.To = tx.To().Hex()
+	if to := tx.To(); to != nil {
+		txData.To = to.Hex()
 	}
 
 	if tx.Value() != nil {
-		amountInt := sdk.NewIntFromBigInt(tx.Value())
+		amountInt, err := types.SafeNewIntFromBigInt(tx.Value())
+		if err != nil {
+			return nil, err
+		}
 		txData.Amount = &amountInt
 	}
 
 	if tx.GasPrice() != nil {
-		gasPriceInt := sdk.NewIntFromBigInt(tx.GasPrice())
+		gasPriceInt, err := types.SafeNewIntFromBigInt(tx.GasPrice())
+		if err != nil {
+			return nil, err
+		}
 		txData.GasPrice = &gasPriceInt
 	}
 
 	txData.SetSignatureValues(tx.ChainId(), v, r, s)
-	return txData
+	return txData, nil
 }
 
 // TxType returns the tx type
@@ -155,22 +175,31 @@ func (tx *LegacyTx) SetSignatureValues(_, v, r, s *big.Int) {
 func (tx LegacyTx) Validate() error {
 	gasPrice := tx.GetGasPrice()
 	if gasPrice == nil {
-		return sdkerrors.Wrap(ErrInvalidGasPrice, "cannot be nil")
+		return errorsmod.Wrap(ErrInvalidGasPrice, "gas price cannot be nil")
 	}
 
 	if gasPrice.Sign() == -1 {
-		return sdkerrors.Wrapf(ErrInvalidGasPrice, "gas price cannot be negative %s", gasPrice)
+		return errorsmod.Wrapf(ErrInvalidGasPrice, "gas price cannot be negative %s", gasPrice)
+	}
+	if !types.IsValidInt256(gasPrice) {
+		return errorsmod.Wrap(ErrInvalidGasPrice, "out of bound")
+	}
+	if !types.IsValidInt256(tx.Fee()) {
+		return errorsmod.Wrap(ErrInvalidGasFee, "out of bound")
 	}
 
 	amount := tx.GetValue()
 	// Amount can be 0
 	if amount != nil && amount.Sign() == -1 {
-		return sdkerrors.Wrapf(ErrInvalidAmount, "amount cannot be negative %s", amount)
+		return errorsmod.Wrapf(ErrInvalidAmount, "amount cannot be negative %s", amount)
+	}
+	if !types.IsValidInt256(amount) {
+		return errorsmod.Wrap(ErrInvalidAmount, "out of bound")
 	}
 
 	if tx.To != "" {
 		if err := types.ValidateAddress(tx.To); err != nil {
-			return sdkerrors.Wrap(err, "invalid to address")
+			return errorsmod.Wrap(err, "invalid to address")
 		}
 	}
 
@@ -185,4 +214,19 @@ func (tx LegacyTx) Fee() *big.Int {
 // Cost returns amount + gasprice * gaslimit.
 func (tx LegacyTx) Cost() *big.Int {
 	return cost(tx.Fee(), tx.GetValue())
+}
+
+// EffectiveGasPrice is the same as GasPrice for LegacyTx
+func (tx LegacyTx) EffectiveGasPrice(_ *big.Int) *big.Int {
+	return tx.GetGasPrice()
+}
+
+// EffectiveFee is the same as Fee for LegacyTx
+func (tx LegacyTx) EffectiveFee(_ *big.Int) *big.Int {
+	return tx.Fee()
+}
+
+// EffectiveCost is the same as Cost for LegacyTx
+func (tx LegacyTx) EffectiveCost(_ *big.Int) *big.Int {
+	return tx.Cost()
 }

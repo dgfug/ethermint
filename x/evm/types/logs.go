@@ -1,17 +1,32 @@
+// Copyright 2021 Evmos Foundation
+// This file is part of Evmos' Ethermint library.
+//
+// The Ethermint library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Ethermint library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Ethermint library. If not, see https://github.com/evmos/ethermint/blob/main/LICENSE
 package types
 
 import (
 	"errors"
 	"fmt"
 
-	ethcmn "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
 
-	ethermint "github.com/tharsis/ethermint/types"
+	ethermint "github.com/evmos/ethermint/types"
 )
 
 // NewTransactionLogs creates a new NewTransactionLogs instance.
-func NewTransactionLogs(hash ethcmn.Hash, logs []*Log) TransactionLogs { // nolint: interfacer
+func NewTransactionLogs(hash common.Hash, logs []*Log) TransactionLogs {
 	return TransactionLogs{
 		Hash: hash.String(),
 		Logs: logs,
@@ -19,7 +34,7 @@ func NewTransactionLogs(hash ethcmn.Hash, logs []*Log) TransactionLogs { // noli
 }
 
 // NewTransactionLogsFromEth creates a new NewTransactionLogs instance using []*ethtypes.Log.
-func NewTransactionLogsFromEth(hash ethcmn.Hash, ethlogs []*ethtypes.Log) TransactionLogs { // nolint: interfacer
+func NewTransactionLogsFromEth(hash common.Hash, ethlogs []*ethtypes.Log) TransactionLogs {
 	return TransactionLogs{
 		Hash: hash.String(),
 		Logs: NewLogsFromEth(ethlogs),
@@ -70,26 +85,26 @@ func (log *Log) Validate() error {
 
 // ToEthereum returns the Ethereum type Log from a Ethermint proto compatible Log.
 func (log *Log) ToEthereum() *ethtypes.Log {
-	var topics []ethcmn.Hash // nolint: prealloc
-	for i := range log.Topics {
-		topics = append(topics, ethcmn.HexToHash(log.Topics[i]))
+	topics := make([]common.Hash, len(log.Topics))
+	for i, topic := range log.Topics {
+		topics[i] = common.HexToHash(topic)
 	}
 
 	return &ethtypes.Log{
-		Address:     ethcmn.HexToAddress(log.Address),
+		Address:     common.HexToAddress(log.Address),
 		Topics:      topics,
 		Data:        log.Data,
 		BlockNumber: log.BlockNumber,
-		TxHash:      ethcmn.HexToHash(log.TxHash),
+		TxHash:      common.HexToHash(log.TxHash),
 		TxIndex:     uint(log.TxIndex),
 		Index:       uint(log.Index),
-		BlockHash:   ethcmn.HexToHash(log.BlockHash),
+		BlockHash:   common.HexToHash(log.BlockHash),
 		Removed:     log.Removed,
 	}
 }
 
 func NewLogsFromEth(ethlogs []*ethtypes.Log) []*Log {
-	var logs []*Log // nolint: prealloc
+	var logs []*Log //nolint: prealloc
 	for _, ethlog := range ethlogs {
 		logs = append(logs, NewLogFromEth(ethlog))
 	}
@@ -99,7 +114,7 @@ func NewLogsFromEth(ethlogs []*ethtypes.Log) []*Log {
 
 // LogsToEthereum casts the Ethermint Logs to a slice of Ethereum Logs.
 func LogsToEthereum(logs []*Log) []*ethtypes.Log {
-	var ethLogs []*ethtypes.Log // nolint: prealloc
+	var ethLogs []*ethtypes.Log //nolint: prealloc
 	for i := range logs {
 		ethLogs = append(ethLogs, logs[i].ToEthereum())
 	}
@@ -108,9 +123,9 @@ func LogsToEthereum(logs []*Log) []*ethtypes.Log {
 
 // NewLogFromEth creates a new Log instance from a Ethereum type Log.
 func NewLogFromEth(log *ethtypes.Log) *Log {
-	var topics []string // nolint: prealloc
-	for _, topic := range log.Topics {
-		topics = append(topics, topic.String())
+	topics := make([]string, len(log.Topics))
+	for i, topic := range log.Topics {
+		topics[i] = topic.String()
 	}
 
 	return &Log{

@@ -3,17 +3,16 @@ package types
 import (
 	"testing"
 
+	sdkmath "cosmossdk.io/math"
 	"github.com/stretchr/testify/require"
-
-	sdk "github.com/cosmos/cosmos-sdk/types"
 
 	"github.com/ethereum/go-ethereum/common"
 )
 
 var defaultEIP150Hash = common.Hash{}.String()
 
-func newIntPtr(i int64) *sdk.Int {
-	v := sdk.NewInt(i)
+func newIntPtr(i int64) *sdkmath.Int {
+	v := sdkmath.NewInt(i)
 	return &v
 }
 
@@ -39,9 +38,9 @@ func TestChainConfigValidate(t *testing.T) {
 				IstanbulBlock:       newIntPtr(0),
 				MuirGlacierBlock:    newIntPtr(0),
 				BerlinBlock:         newIntPtr(0),
-				YoloV3Block:         newIntPtr(0),
-				EWASMBlock:          newIntPtr(0),
-				CatalystBlock:       newIntPtr(0),
+				LondonBlock:         newIntPtr(0),
+				CancunBlock:         newIntPtr(0),
+				ShanghaiBlock:       newIntPtr(0),
 			},
 			false,
 		},
@@ -60,9 +59,9 @@ func TestChainConfigValidate(t *testing.T) {
 				IstanbulBlock:       nil,
 				MuirGlacierBlock:    nil,
 				BerlinBlock:         nil,
-				YoloV3Block:         nil,
-				EWASMBlock:          nil,
-				CatalystBlock:       nil,
+				LondonBlock:         nil,
+				CancunBlock:         nil,
+				ShanghaiBlock:       nil,
 			},
 			false,
 		},
@@ -222,7 +221,7 @@ func TestChainConfigValidate(t *testing.T) {
 			true,
 		},
 		{
-			"invalid YoloV3Block",
+			"invalid LondonBlock",
 			ChainConfig{
 				HomesteadBlock:      newIntPtr(0),
 				DAOForkBlock:        newIntPtr(0),
@@ -236,12 +235,12 @@ func TestChainConfigValidate(t *testing.T) {
 				IstanbulBlock:       newIntPtr(0),
 				MuirGlacierBlock:    newIntPtr(0),
 				BerlinBlock:         newIntPtr(0),
-				YoloV3Block:         newIntPtr(-1),
+				LondonBlock:         newIntPtr(-1),
 			},
 			true,
 		},
 		{
-			"invalid EWASMBlock",
+			"invalid ArrowGlacierBlock",
 			ChainConfig{
 				HomesteadBlock:      newIntPtr(0),
 				DAOForkBlock:        newIntPtr(0),
@@ -255,13 +254,13 @@ func TestChainConfigValidate(t *testing.T) {
 				IstanbulBlock:       newIntPtr(0),
 				MuirGlacierBlock:    newIntPtr(0),
 				BerlinBlock:         newIntPtr(0),
-				YoloV3Block:         newIntPtr(0),
-				EWASMBlock:          newIntPtr(-1),
+				LondonBlock:         newIntPtr(0),
+				ArrowGlacierBlock:   newIntPtr(-1),
 			},
 			true,
 		},
 		{
-			"invalid CatalystBlock",
+			"invalid GrayGlacierBlock",
 			ChainConfig{
 				HomesteadBlock:      newIntPtr(0),
 				DAOForkBlock:        newIntPtr(0),
@@ -274,10 +273,97 @@ func TestChainConfigValidate(t *testing.T) {
 				PetersburgBlock:     newIntPtr(0),
 				IstanbulBlock:       newIntPtr(0),
 				MuirGlacierBlock:    newIntPtr(0),
-				YoloV3Block:         newIntPtr(0),
-
-				EWASMBlock:    newIntPtr(0),
-				CatalystBlock: newIntPtr(-1),
+				BerlinBlock:         newIntPtr(0),
+				LondonBlock:         newIntPtr(0),
+				ArrowGlacierBlock:   newIntPtr(0),
+				GrayGlacierBlock:    newIntPtr(-1),
+			},
+			true,
+		},
+		{
+			"invalid MergeNetsplitBlock",
+			ChainConfig{
+				HomesteadBlock:      newIntPtr(0),
+				DAOForkBlock:        newIntPtr(0),
+				EIP150Block:         newIntPtr(0),
+				EIP150Hash:          defaultEIP150Hash,
+				EIP155Block:         newIntPtr(0),
+				EIP158Block:         newIntPtr(0),
+				ByzantiumBlock:      newIntPtr(0),
+				ConstantinopleBlock: newIntPtr(0),
+				PetersburgBlock:     newIntPtr(0),
+				IstanbulBlock:       newIntPtr(0),
+				MuirGlacierBlock:    newIntPtr(0),
+				BerlinBlock:         newIntPtr(0),
+				LondonBlock:         newIntPtr(0),
+				ArrowGlacierBlock:   newIntPtr(0),
+				GrayGlacierBlock:    newIntPtr(0),
+				MergeNetsplitBlock:  newIntPtr(-1),
+			},
+			true,
+		},
+		{
+			"invalid fork order - skip HomesteadBlock",
+			ChainConfig{
+				DAOForkBlock:        newIntPtr(0),
+				EIP150Block:         newIntPtr(0),
+				EIP150Hash:          defaultEIP150Hash,
+				EIP155Block:         newIntPtr(0),
+				EIP158Block:         newIntPtr(0),
+				ByzantiumBlock:      newIntPtr(0),
+				ConstantinopleBlock: newIntPtr(0),
+				PetersburgBlock:     newIntPtr(0),
+				IstanbulBlock:       newIntPtr(0),
+				MuirGlacierBlock:    newIntPtr(0),
+				BerlinBlock:         newIntPtr(0),
+				LondonBlock:         newIntPtr(0),
+			},
+			true,
+		},
+		{
+			"invalid ShanghaiBlock",
+			ChainConfig{
+				HomesteadBlock:      newIntPtr(0),
+				DAOForkBlock:        newIntPtr(0),
+				EIP150Block:         newIntPtr(0),
+				EIP150Hash:          defaultEIP150Hash,
+				EIP155Block:         newIntPtr(0),
+				EIP158Block:         newIntPtr(0),
+				ByzantiumBlock:      newIntPtr(0),
+				ConstantinopleBlock: newIntPtr(0),
+				PetersburgBlock:     newIntPtr(0),
+				IstanbulBlock:       newIntPtr(0),
+				MuirGlacierBlock:    newIntPtr(0),
+				BerlinBlock:         newIntPtr(0),
+				LondonBlock:         newIntPtr(0),
+				ArrowGlacierBlock:   newIntPtr(0),
+				GrayGlacierBlock:    newIntPtr(0),
+				MergeNetsplitBlock:  newIntPtr(0),
+				ShanghaiBlock:       newIntPtr(-1),
+			},
+			true,
+		},
+		{
+			"invalid CancunBlock",
+			ChainConfig{
+				HomesteadBlock:      newIntPtr(0),
+				DAOForkBlock:        newIntPtr(0),
+				EIP150Block:         newIntPtr(0),
+				EIP150Hash:          defaultEIP150Hash,
+				EIP155Block:         newIntPtr(0),
+				EIP158Block:         newIntPtr(0),
+				ByzantiumBlock:      newIntPtr(0),
+				ConstantinopleBlock: newIntPtr(0),
+				PetersburgBlock:     newIntPtr(0),
+				IstanbulBlock:       newIntPtr(0),
+				MuirGlacierBlock:    newIntPtr(0),
+				BerlinBlock:         newIntPtr(0),
+				LondonBlock:         newIntPtr(0),
+				ArrowGlacierBlock:   newIntPtr(0),
+				GrayGlacierBlock:    newIntPtr(0),
+				MergeNetsplitBlock:  newIntPtr(0),
+				ShanghaiBlock:       newIntPtr(0),
+				CancunBlock:         newIntPtr(-1),
 			},
 			true,
 		},

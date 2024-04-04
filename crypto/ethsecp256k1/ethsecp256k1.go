@@ -1,3 +1,18 @@
+// Copyright 2021 Evmos Foundation
+// This file is part of Evmos' Ethermint library.
+//
+// The Ethermint library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Ethermint library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Ethermint library. If not, see https://github.com/evmos/ethermint/blob/main/LICENSE
 package ethsecp256k1
 
 import (
@@ -6,12 +21,12 @@ import (
 	"crypto/subtle"
 	"fmt"
 
-	ethcrypto "github.com/ethereum/go-ethereum/crypto"
-
+	errorsmod "cosmossdk.io/errors"
 	"github.com/cosmos/cosmos-sdk/codec"
 	cryptotypes "github.com/cosmos/cosmos-sdk/crypto/types"
-	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-
+	errortypes "github.com/cosmos/cosmos-sdk/types/errors"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/evmos/ethermint/ethereum/eip712"
 	tmcrypto "github.com/tendermint/tendermint/crypto"
 )
 
@@ -43,26 +58,34 @@ var (
 // GenerateKey generates a new random private key. It returns an error upon
 // failure.
 func GenerateKey() (*PrivKey, error) {
-	priv, err := ethcrypto.GenerateKey()
+	priv, err := crypto.GenerateKey()
 	if err != nil {
 		return nil, err
 	}
 
 	return &PrivKey{
-		Key: ethcrypto.FromECDSA(priv),
+		Key: crypto.FromECDSA(priv),
 	}, nil
 }
 
 // Bytes returns the byte representation of the ECDSA Private Key.
 func (privKey PrivKey) Bytes() []byte {
-	return privKey.Key
+	bz := make([]byte, len(privKey.Key))
+	copy(bz, privKey.Key)
+
+	return bz
 }
 
-// PubKey returns the ECDSA private key's public key.
+// PubKey returns the ECDSA private key's public key. If the privkey is not valid
+// it returns a nil value.
 func (privKey PrivKey) PubKey() cryptotypes.PubKey {
-	ecdsaPrivKey := privKey.ToECDSA()
+	ecdsaPrivKey, err := privKey.ToECDSA()
+	if err != nil {
+		return nil
+	}
+
 	return &PubKey{
-		Key: ethcrypto.CompressPubkey(&ecdsaPrivKey.PublicKey),
+		Key: crypto.CompressPubkey(&ecdsaPrivKey.PublicKey),
 	}
 }
 
@@ -76,12 +99,12 @@ func (privKey PrivKey) Type() string {
 	return KeyType
 }
 
-// MarshalAmino overrides Amino binary marshalling.
+// MarshalAmino overrides Amino binary marshaling.
 func (privKey PrivKey) MarshalAmino() ([]byte, error) {
 	return privKey.Key, nil
 }
 
-// UnmarshalAmino overrides Amino binary marshalling.
+// UnmarshalAmino overrides Amino binary marshaling.
 func (privKey *PrivKey) UnmarshalAmino(bz []byte) error {
 	if len(bz) != PrivKeySize {
 		return fmt.Errorf("invalid privkey size, expected %d got %d", PrivKeySize, len(bz))
@@ -91,14 +114,14 @@ func (privKey *PrivKey) UnmarshalAmino(bz []byte) error {
 	return nil
 }
 
-// MarshalAminoJSON overrides Amino JSON marshalling.
+// MarshalAminoJSON overrides Amino JSON marshaling.
 func (privKey PrivKey) MarshalAminoJSON() ([]byte, error) {
 	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
 	// just its contents (i.e. the key bytes).
 	return privKey.MarshalAmino()
 }
 
-// UnmarshalAminoJSON overrides Amino JSON marshalling.
+// UnmarshalAminoJSON overrides Amino JSON marshaling.
 func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
 	return privKey.UnmarshalAmino(bz)
 }
@@ -107,21 +130,22 @@ func (privKey *PrivKey) UnmarshalAminoJSON(bz []byte) error {
 // provided hash of the message. The produced signature is 65 bytes
 // where the last byte contains the recovery ID.
 func (privKey PrivKey) Sign(digestBz []byte) ([]byte, error) {
-	if len(digestBz) != ethcrypto.DigestLength {
-		digestBz = ethcrypto.Keccak256Hash(digestBz).Bytes()
+	// TODO: remove
+	if len(digestBz) != crypto.DigestLength {
+		digestBz = crypto.Keccak256Hash(digestBz).Bytes()
 	}
 
-	return ethcrypto.Sign(digestBz, privKey.ToECDSA())
+	key, err := privKey.ToECDSA()
+	if err != nil {
+		return nil, err
+	}
+
+	return crypto.Sign(digestBz, key)
 }
 
 // ToECDSA returns the ECDSA private key as a reference to ecdsa.PrivateKey type.
-// The function will panic if the private key is invalid.
-func (privKey PrivKey) ToECDSA() *ecdsa.PrivateKey {
-	key, err := ethcrypto.ToECDSA(privKey.Bytes())
-	if err != nil {
-		panic(err)
-	}
-	return key
+func (privKey PrivKey) ToECDSA() (*ecdsa.PrivateKey, error) {
+	return crypto.ToECDSA(privKey.Bytes())
 }
 
 // ----------------------------------------------------------------------------
@@ -133,19 +157,22 @@ var (
 )
 
 // Address returns the address of the ECDSA public key.
-// The function will panic if the public key is invalid.
+// The function will return an empty address if the public key is invalid.
 func (pubKey PubKey) Address() tmcrypto.Address {
-	pubk, err := ethcrypto.DecompressPubkey(pubKey.Key)
+	pubk, err := crypto.DecompressPubkey(pubKey.Key)
 	if err != nil {
-		panic(err)
+		return nil
 	}
 
-	return tmcrypto.Address(ethcrypto.PubkeyToAddress(*pubk).Bytes())
+	return tmcrypto.Address(crypto.PubkeyToAddress(*pubk).Bytes())
 }
 
 // Bytes returns the raw bytes of the ECDSA public key.
 func (pubKey PubKey) Bytes() []byte {
-	return pubKey.Key
+	bz := make([]byte, len(pubKey.Key))
+	copy(bz, pubKey.Key)
+
+	return bz
 }
 
 // String implements the fmt.Stringer interface.
@@ -163,44 +190,72 @@ func (pubKey PubKey) Equals(other cryptotypes.PubKey) bool {
 	return pubKey.Type() == other.Type() && bytes.Equal(pubKey.Bytes(), other.Bytes())
 }
 
-// MarshalAmino overrides Amino binary marshalling.
+// MarshalAmino overrides Amino binary marshaling.
 func (pubKey PubKey) MarshalAmino() ([]byte, error) {
 	return pubKey.Key, nil
 }
 
-// UnmarshalAmino overrides Amino binary marshalling.
+// UnmarshalAmino overrides Amino binary marshaling.
 func (pubKey *PubKey) UnmarshalAmino(bz []byte) error {
 	if len(bz) != PubKeySize {
-		return sdkerrors.Wrapf(sdkerrors.ErrInvalidPubKey, "invalid pubkey size, expected %d, got %d", PubKeySize, len(bz))
+		return errorsmod.Wrapf(errortypes.ErrInvalidPubKey, "invalid pubkey size, expected %d, got %d", PubKeySize, len(bz))
 	}
 	pubKey.Key = bz
 
 	return nil
 }
 
-// MarshalAminoJSON overrides Amino JSON marshalling.
+// MarshalAminoJSON overrides Amino JSON marshaling.
 func (pubKey PubKey) MarshalAminoJSON() ([]byte, error) {
 	// When we marshal to Amino JSON, we don't marshal the "key" field itself,
 	// just its contents (i.e. the key bytes).
 	return pubKey.MarshalAmino()
 }
 
-// UnmarshalAminoJSON overrides Amino JSON marshalling.
+// UnmarshalAminoJSON overrides Amino JSON marshaling.
 func (pubKey *PubKey) UnmarshalAminoJSON(bz []byte) error {
 	return pubKey.UnmarshalAmino(bz)
 }
 
 // VerifySignature verifies that the ECDSA public key created a given signature over
 // the provided message. It will calculate the Keccak256 hash of the message
-// prior to verification.
+// prior to verification and approve verification if the signature can be verified
+// from either the original message or its EIP-712 representation.
 //
 // CONTRACT: The signature should be in [R || S] format.
-func (pubKey PubKey) VerifySignature(msg []byte, sig []byte) bool {
-	if len(sig) == ethcrypto.SignatureLength {
+func (pubKey PubKey) VerifySignature(msg, sig []byte) bool {
+	return pubKey.verifySignatureECDSA(msg, sig) || pubKey.verifySignatureAsEIP712(msg, sig)
+}
+
+// Verifies the signature as an EIP-712 signature by first converting the message payload
+// to EIP-712 object bytes, then performing ECDSA verification on the hash. This is to support
+// signing a Cosmos payload using EIP-712.
+func (pubKey PubKey) verifySignatureAsEIP712(msg, sig []byte) bool {
+	eip712Bytes, err := eip712.GetEIP712BytesForMsg(msg)
+	if err != nil {
+		return false
+	}
+
+	if pubKey.verifySignatureECDSA(eip712Bytes, sig) {
+		return true
+	}
+
+	// Try verifying the signature using the legacy EIP-712 encoding
+	legacyEIP712Bytes, err := eip712.LegacyGetEIP712BytesForMsg(msg)
+	if err != nil {
+		return false
+	}
+
+	return pubKey.verifySignatureECDSA(legacyEIP712Bytes, sig)
+}
+
+// Perform standard ECDSA signature verification for the given raw bytes and signature.
+func (pubKey PubKey) verifySignatureECDSA(msg, sig []byte) bool {
+	if len(sig) == crypto.SignatureLength {
 		// remove recovery ID (V) if contained in the signature
 		sig = sig[:len(sig)-1]
 	}
 
 	// the signature needs to be in [R || S] format when provided to VerifySignature
-	return ethcrypto.VerifySignature(pubKey.Key, ethcrypto.Keccak256Hash(msg).Bytes(), sig)
+	return crypto.VerifySignature(pubKey.Key, crypto.Keccak256Hash(msg).Bytes(), sig)
 }

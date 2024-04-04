@@ -1,9 +1,24 @@
+// Copyright 2021 Evmos Foundation
+// This file is part of Evmos' Ethermint library.
+//
+// The Ethermint library is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Lesser General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// The Ethermint library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU Lesser General Public License for more details.
+//
+// You should have received a copy of the GNU Lesser General Public License
+// along with the Ethermint library. If not, see https://github.com/evmos/ethermint/blob/main/LICENSE
 package importer
 
 import (
 	"math/big"
 
-	ethcmn "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common"
 	ethcons "github.com/ethereum/go-ethereum/consensus"
 	ethstate "github.com/ethereum/go-ethereum/core/state"
 	ethtypes "github.com/ethereum/go-ethereum/core/types"
@@ -20,7 +35,7 @@ import (
 // NOTE: Ethermint will distribute the fees out to validators, so the structure
 // and functionality of this is a WIP and subject to change.
 type ChainContext struct {
-	Coinbase        ethcmn.Address
+	Coinbase        common.Address
 	headersByNumber map[uint64]*ethtypes.Header
 }
 
@@ -48,7 +63,7 @@ func (cc *ChainContext) SetHeader(number uint64, header *ethtypes.Header) {
 //
 // TODO: The Cosmos SDK supports retreiving such information in contexts and
 // multi-store, so this will be need to be integrated.
-func (cc *ChainContext) GetHeader(_ ethcmn.Hash, number uint64) *ethtypes.Header {
+func (cc *ChainContext) GetHeader(_ common.Hash, number uint64) *ethtypes.Header {
 	if header, ok := cc.headersByNumber[number]; ok {
 		return header
 	}
@@ -62,7 +77,7 @@ func (cc *ChainContext) GetHeader(_ ethcmn.Hash, number uint64) *ethtypes.Header
 //
 // NOTE: Ethermint will distribute the fees out to validators, so the structure
 // and functionality of this is a WIP and subject to change.
-func (cc *ChainContext) Author(_ *ethtypes.Header) (ethcmn.Address, error) {
+func (cc *ChainContext) Author(_ *ethtypes.Header) (common.Address, error) {
 	return cc.Coinbase, nil
 }
 
@@ -96,8 +111,13 @@ func (cc *ChainContext) Finalize(
 // Note: The block header and state database might be updated to reflect any
 // consensus rules that happen at finalization (e.g. block rewards).
 // TODO: Figure out if this needs to be hooked up to any part of the ABCI?
-func (cc *ChainContext) FinalizeAndAssemble(_ ethcons.ChainHeaderReader, _ *ethtypes.Header, _ *ethstate.StateDB, _ []*ethtypes.Transaction,
-	_ []*ethtypes.Header, _ []*ethtypes.Receipt) (*ethtypes.Block, error) {
+func (cc *ChainContext) FinalizeAndAssemble(_ ethcons.ChainHeaderReader,
+	_ *ethtypes.Header,
+	_ *ethstate.StateDB,
+	_ []*ethtypes.Transaction,
+	_ []*ethtypes.Header,
+	_ []*ethtypes.Receipt,
+) (*ethtypes.Block, error) {
 	return nil, nil
 }
 
@@ -119,8 +139,8 @@ func (cc *ChainContext) Seal(_ ethcons.ChainHeaderReader, _ *ethtypes.Block, _ c
 
 // SealHash implements Ethereum's consensus.Engine interface. It returns the
 // hash of a block prior to it being sealed.
-func (cc *ChainContext) SealHash(header *ethtypes.Header) ethcmn.Hash {
-	return ethcmn.Hash{}
+func (cc *ChainContext) SealHash(_ *ethtypes.Header) common.Hash {
+	return common.Hash{}
 }
 
 // VerifyHeader implements Ethereum's consensus.Engine interface. It currently
